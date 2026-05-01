@@ -13,7 +13,8 @@ class Empresa extends Model
     protected $fillable = [
         'nome',
         'plano',
-        'status'
+        'status',
+        'instancia'
     ];
 
     public function users()
