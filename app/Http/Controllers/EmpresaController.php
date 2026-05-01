@@ -18,7 +18,8 @@ class EmpresaController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'plano' => 'required',
-            'status' => 'required'
+            'status' => 'required',
+            'instancia' => 'required'
         ]);
 
         if ($validator->fails()) {
