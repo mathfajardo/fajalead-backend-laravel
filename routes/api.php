@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // empresas
     Route::post('/empresas', [EmpresaController::class, 'store']);
+    Route::get('/empresas', [EmpresaController::class, 'index']);
 
 
     // leads
@@ -48,19 +49,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/prompt', [PromptController::class, 'store']);
     Route::put('/prompt/{prompt}', [PromptController::class, 'update']);
 
+    // logout
+    Route::post('/logout', [AuthController::class, 'logout']);
+
 
     // verifica token
     Route::get('login/verifica', [AuthController::class, 'verifica_token']);
 });
 
-
 // rota para autenticação
 Route::post('/login', [AuthController::class, 'login']);
-
-
-Route::post('/user', [UserController::class, 'store']);
-
-
-Route::post('/empresas', [EmpresaController::class, 'store']);
-
-Route::post('/disparocampanha', [LeadController::class, 'disparoCampanhaLeads']);
