@@ -11,6 +11,12 @@ class EmpresaController extends Controller
 {
     use HttpResponses;
 
+    public function index(Request $request)
+    {
+        return (new Empresa())->filter($request);
+    }
+
+
     public function store(Request $request)
     {
     
