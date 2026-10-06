@@ -21,6 +21,7 @@ class Cliente extends Model
         'plano',
         'mensalidade',
         'observacoes',
+        'ativo',
     ];
 
     public function empresa()

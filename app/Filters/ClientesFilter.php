@@ -12,5 +12,6 @@ class ClientesFilter extends Filter
         'plano' => ['eq'],
         'mensalidade' => ['eq'],
         'observacoes' => ['eq'],
+        'ativo' => ['eq'],
     ];
 }
