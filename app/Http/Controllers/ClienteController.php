@@ -27,6 +27,7 @@ class ClienteController extends Controller
             'plano' => 'required',
             'mensalidade' => 'required',
             'observacoes' => 'nullable',
+            'ativo' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -63,6 +64,7 @@ class ClienteController extends Controller
             'plano' => 'required',
             'mensalidade' => 'required',
             'observacoes' => 'nullable',
+            'ativo' => 'required|boolean'
         ]);
 
         if ($validator->fails()) {
@@ -77,6 +79,7 @@ class ClienteController extends Controller
             'plano' => $validated['plano'],
             'mensalidade' => $validated['mensalidade'],
             'observacoes' => $validated['observacoes'],
+            'ativo' => $validated['ativo'],
         ]);
 
         if ($atualiza) {
@@ -122,5 +125,14 @@ class ClienteController extends Controller
         $total = Cliente::where('empresa_id', $empresa_id)->count();
 
         return $this->response('Query de clientes no total realizada com sucesso', 200, ['total' => $total]);
+    }
+
+    public function clientesAtivosTotal()
+    {
+        $empresa_id = auth()->user()->empresa_id;
+
+        $total = Cliente::where('empresa_id', $empresa_id)->where('ativo', true)->count();
+
+        return $this->response('Query de clientes ativos no total realizada com sucesso', 200, ['total' => $total]);
     }
 }

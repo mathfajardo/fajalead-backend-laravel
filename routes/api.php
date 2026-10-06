@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy']);
     Route::get('/clientesMes', [ClienteController::class, 'clientesMes']);
     Route::get('/clientesTotal', [ClienteController::class, 'clientesTotal']);
+    Route::get('/clientesAtivosTotal', [ClienteController::class, 'clientesAtivosTotal']);
 
     // user
     Route::get('/user', [UserController::class, 'index']);
