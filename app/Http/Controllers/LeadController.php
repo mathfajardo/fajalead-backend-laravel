@@ -108,24 +108,6 @@ class LeadController extends Controller
         return $this->response('Query leads no mes realizada com sucesso', 200, ['total' => $total]);
     }
 
-    public function leadsMesTodos()
-    {
-
-        $empresa_id = auth()->user()->empresa_id;
-
-        $ano = now()->year;
-
-        $meses = [];
-
-        for ($i = 1; $i < 13; $i++) {
-            $total = Lead::whereMonth('created_at', $i)->whereYear('created_at', $ano)->where('empresa_id', $empresa_id)->count();
-
-            $meses[$i] = $total;
-        }
-
-        return $this->response('Query leads no mes realizada com sucesso', 200, [$meses]);
-    }
-
     public function disparoCampanhaLeads(Request $request)
     {
         // array para armazenar dados
@@ -155,4 +137,21 @@ class LeadController extends Controller
         return $this->response('Deu certo', 200);
 
     }
+
+    public function leadsMesTodos()
+    {
+        $empresa_id = auth()->user()->empresa_id;
+
+
+
+        $query = Lead::selectRaw("DATE_FORMAT(created_at, '%m/%y') AS periodo, COUNT(*) AS total")
+                    ->where('empresa_id', $empresa_id)
+                    ->whereDate('created_at', '>', now()->subMonths(11)->toDateString())
+                    ->groupBy('periodo')
+                    ->get();
+
+
+        return $this->response('Query realizada com sucesso', 200, $query->toArray());
+    }
+
 }
