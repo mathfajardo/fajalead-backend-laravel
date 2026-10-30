@@ -142,16 +142,20 @@ class LeadController extends Controller
     {
         $empresa_id = auth()->user()->empresa_id;
 
-
-
         $query = Lead::selectRaw("DATE_FORMAT(created_at, '%m/%y') AS periodo, COUNT(*) AS total")
                     ->where('empresa_id', $empresa_id)
-                    ->whereDate('created_at', '>', now()->subMonths(11)->toDateString())
+                    ->where('created_at', '>=', now()->startOfMonth()->subMonthsNoOverflow(11))
                     ->groupBy('periodo')
-                    ->get();
+                    ->pluck('total', 'periodo');
 
+        $resultado = [];
 
-        return $this->response('Query realizada com sucesso', 200, $query->toArray());
+        for ($i = 11; $i >= 0; $i--) {
+            $mes = now()->startOfMonth()->subMonthsNoOverflow($i)->format('m/y');
+            $resultado[] = ['periodo' => $mes, 'total' => (int) ($query[$mes] ?? 0)];
+        }
+
+        return $this->response('Query realizada com sucesso', 200, $resultado);
     }
 
 }
