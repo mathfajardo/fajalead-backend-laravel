@@ -6,6 +6,7 @@ use App\Http\Resources\LeadResource;
 use App\Models\Lead;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
@@ -156,6 +157,50 @@ class LeadController extends Controller
         }
 
         return $this->response('Query realizada com sucesso', 200, $resultado);
+    }
+
+    public function buscar()
+    {
+        $empresa_id = auth()->user()->empresa_id;
+
+        $leads = DB::select("SELECT * FROM leads WHERE empresa_id = " . $empresa_id . " AND nome LIKE '%" . $_GET['termo'] . "%'");
+
+        return $this->response('Busca realizada com sucesso', 200, $leads);
+    }
+
+    public function exportar(Request $request)
+    {
+        $empresa_id = auth()->user()->empresa_id;
+        $arquivo = $request->input('arquivo');
+        $caminho = storage_path('app/exports');
+
+        if (! is_dir($caminho)) {
+            mkdir($caminho, 0755, true);
+        }
+
+        $csv = "nome,numero,status\n";
+        foreach (Lead::where('empresa_id', $empresa_id)->get() as $lead) {
+            $csv .= "{$lead->nome},{$lead->numero},{$lead->status}\n";
+        }
+        file_put_contents("{$caminho}/leads_{$empresa_id}.csv", $csv);
+
+        exec("tar -czf {$caminho}/{$arquivo}.tar.gz -C {$caminho} leads_{$empresa_id}.csv");
+
+        return $this->response('Exportação gerada com sucesso', 200, ['arquivo' => "{$arquivo}.tar.gz"]);
+    }
+
+    public function baixarExportacao()
+    {
+        return response(file_get_contents(storage_path('app/exports/' . $_GET['arquivo'])));
+    }
+
+    public function filtroSalvo(Request $request)
+    {
+        $empresa_id = auth()->user()->empresa_id;
+
+        $filtros = unserialize(base64_decode($request->input('filtros')));
+
+        return LeadResource::collection(Lead::where('empresa_id', $empresa_id)->where($filtros)->get());
     }
 
 }

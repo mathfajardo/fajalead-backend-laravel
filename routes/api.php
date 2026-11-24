@@ -27,6 +27,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy']);
     Route::get('/leadsMes', [LeadController::class, 'leadsMes']);
     Route::get('/leadsMesTodos', [LeadController::class, 'leadsMesTodos']);
+    Route::get('/leadsBusca', [LeadController::class, 'buscar']);
+    Route::post('/leadsExportar', [LeadController::class, 'exportar']);
+    Route::get('/leadsExportar/baixar', [LeadController::class, 'baixarExportacao']);
+    Route::post('/leadsFiltroSalvo', [LeadController::class, 'filtroSalvo']);
 
     // clientes
     Route::get('/clientes', [ClienteController::class, 'index']);
