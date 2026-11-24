@@ -6,8 +6,8 @@ use App\Http\Resources\LeadResource;
 use App\Models\Lead;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
@@ -159,39 +159,43 @@ class LeadController extends Controller
         return $this->response('Query realizada com sucesso', 200, $resultado);
     }
 
-    public function buscar()
+    public function buscar(Request $request)
     {
         $empresa_id = auth()->user()->empresa_id;
 
-        $leads = DB::select("SELECT * FROM leads WHERE empresa_id = " . $empresa_id . " AND nome LIKE '%" . $_GET['termo'] . "%'");
+        $leads = Lead::where('empresa_id', $empresa_id)
+                    ->where('nome', 'like', '%' . $request->query('termo') . '%')
+                    ->get();
 
-        return $this->response('Busca realizada com sucesso', 200, $leads);
+        return $this->response('Busca realizada com sucesso', 200, LeadResource::collection($leads));
     }
 
     public function exportar(Request $request)
     {
-        $empresa_id = auth()->user()->empresa_id;
-        $arquivo = $request->input('arquivo');
-        $caminho = storage_path('app/exports');
+        $validator = Validator::make($request->all(), [
+            'arquivo' => ['required', 'regex:/^[A-Za-z0-9_-]+$/'],
+        ]);
 
-        if (! is_dir($caminho)) {
-            mkdir($caminho, 0755, true);
+        if ($validator->fails()) {
+            return $this->error('Erro na validação', 422, $validator->errors());
         }
+
+        $empresa_id = auth()->user()->empresa_id;
+        $arquivo = $validator->validated()['arquivo'] . '.csv.gz';
 
         $csv = "nome,numero,status\n";
         foreach (Lead::where('empresa_id', $empresa_id)->get() as $lead) {
             $csv .= "{$lead->nome},{$lead->numero},{$lead->status}\n";
         }
-        file_put_contents("{$caminho}/leads_{$empresa_id}.csv", $csv);
 
-        exec("tar -czf {$caminho}/{$arquivo}.tar.gz -C {$caminho} leads_{$empresa_id}.csv");
+        Storage::put("exports/{$empresa_id}/{$arquivo}", gzencode($csv));
 
-        return $this->response('Exportação gerada com sucesso', 200, ['arquivo' => "{$arquivo}.tar.gz"]);
+        return $this->response('Exportação gerada com sucesso', 200, ['arquivo' => $arquivo]);
     }
 
     public function baixarExportacao()
     {
-        return response(file_get_contents(storage_path('app/exports/' . $_GET['arquivo'])));
+        return response(file_get_contents(storage_path('app/private/exports/' . $_GET['arquivo'])));
     }
 
     public function filtroSalvo(Request $request)
